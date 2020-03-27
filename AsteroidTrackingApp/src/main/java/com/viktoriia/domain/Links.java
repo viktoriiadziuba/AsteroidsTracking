@@ -9,6 +9,10 @@ public class Links {
     @Expose
     private String self;
 
+    public Links() {
+
+    }
+
     public Links(String self) {
         this.self = self;
     }

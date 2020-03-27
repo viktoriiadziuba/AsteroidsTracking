@@ -23,20 +23,20 @@ public class AsteroidService {
     private static final Logger LOGGER = LogManager.getLogger(AsteroidService.class);
     private static final Gson gson = new Gson();
     private static final ElasticRequests elasticRequests = new ElasticRequests();
-    private final String API_KEY = this.getApiKey();
+    private static final String PROP_FILE_NAME = "application.properties";
+    private static final String API_URL = "https://api.nasa.gov/neo/rest/v1";
+    private final String apiKey = this.getApiKey();
 
     public String getApiKey() {
         InputStream inputStream;
         String key = "";
         try {
             Properties prop = new Properties();
-            String propFileName = "application.properties";
-
-            inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+            inputStream = getClass().getClassLoader().getResourceAsStream(PROP_FILE_NAME);
             if (inputStream != null) {
                 prop.load(inputStream);
             } else {
-                throw new FileNotFoundException("Property file '" + propFileName + "' not found in the classpath");
+                throw new FileNotFoundException("Property file '" + PROP_FILE_NAME + "' not found in the classpath");
             }
             key = prop.getProperty("api_key");
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class AsteroidService {
         for (int i = 0; i <= lastPage; i++) {
             BulkRequest bulkRequest = new BulkRequest();
             try {
-                JSONObject page = JsonReaderUtils.readJsonFromUrl("https://api.nasa.gov/neo/rest/v1/neo/browse?api_key=" + API_KEY + "&page=" + i);
+                JSONObject page = JsonReaderUtils.readJsonFromUrl(API_URL + "/neo/browse?api_key=" + apiKey + "&page=" + i);
                 JSONArray list = page.getJSONArray("near_earth_objects");
                 for (int j = 0; j < list.length(); j++) {
                     Asteroid asteroid = gson.fromJson(list.getJSONObject(j).toString(), Asteroid.class);
@@ -69,7 +69,7 @@ public class AsteroidService {
     public int getNumberOfLastPage() {
         int lastPage = 0;
         try {
-            JSONObject firstPage = JsonReaderUtils.readJsonFromUrl("https://api.nasa.gov/neo/rest/v1/neo/browse?api_key=" + API_KEY);
+            JSONObject firstPage = JsonReaderUtils.readJsonFromUrl(API_URL + "/neo/browse?api_key=" + apiKey);
             JSONObject pageableData = firstPage.getJSONObject("page");
             lastPage = pageableData.getInt("total_pages");
         } catch (JSONException | IOException e) {
@@ -81,7 +81,7 @@ public class AsteroidService {
     public void getAsteroidListByDate(LocalDate date) {
         BulkRequest bulkRequest = new BulkRequest();
         try {
-            JSONObject jsonPage = JsonReaderUtils.readJsonFromUrl("https://api.nasa.gov/neo/rest/v1/feed?start_date=" + date + "&end_date=" + date + "&api_key=" + API_KEY);
+            JSONObject jsonPage = JsonReaderUtils.readJsonFromUrl(API_URL + "/feed?start_date=" + date + "&end_date=" + date + "&api_key=" + apiKey);
             JSONObject datePage = jsonPage.getJSONObject("near_earth_objects");
             JSONArray dayRec = datePage.getJSONArray(date.toString());
             for (int i = 0; i <= dayRec.length(); i++) {

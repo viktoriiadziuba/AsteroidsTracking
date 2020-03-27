@@ -9,6 +9,10 @@ public class MissDistance {
     @Expose
     private String kilometers;
 
+    public MissDistance() {
+
+    }
+
     public MissDistance(String kilometers) {
         this.kilometers = kilometers;
     }

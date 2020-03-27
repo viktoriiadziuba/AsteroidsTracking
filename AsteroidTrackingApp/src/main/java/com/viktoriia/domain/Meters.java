@@ -13,6 +13,10 @@ public class Meters {
     @Expose
     private String estimatedDiameterMax;
 
+    public Meters() {
+
+    }
+
     public Meters(String estimatedDiameterMin, String estimatedDiameterMax) {
         this.estimatedDiameterMin = estimatedDiameterMin;
         this.estimatedDiameterMax = estimatedDiameterMax;

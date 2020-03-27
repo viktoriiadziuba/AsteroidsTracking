@@ -1,7 +1,6 @@
 package com.viktoriia.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.viktoriia.config.ElasticsearchConfig;
 import com.viktoriia.domain.Asteroid;
 import org.apache.logging.log4j.LogManager;
@@ -16,21 +15,17 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ElasticRequests {
 
     private static final Logger LOGGER = LogManager.getLogger(ElasticRequests.class);
     private static final String INDEX = "asteroid";
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Gson gson = new Gson();
 
     public IndexRequest makeIndexRequest(Asteroid asteroid) {
         return new IndexRequest(INDEX).id(asteroid.getNeoReferenceId()).
@@ -46,15 +41,17 @@ public class ElasticRequests {
         }
     }
 
-    public Asteroid getById(String id) {
+    public static Asteroid getById(String id) {
         Asteroid asteroid = null;
-        GetRequest getRequest = new GetRequest(INDEX,id);
+        GetRequest getRequest = new GetRequest(INDEX, id);
         try {
             GetResponse getResponse = ElasticsearchConfig.client().get(getRequest, RequestOptions.DEFAULT);
-            JSONObject jsonObject = new JSONObject(getResponse.toString());
-            asteroid = gson.fromJson(jsonObject.toString(), Asteroid.class);
+            asteroid = objectMapper.convertValue(getResponse.getSourceAsMap(), Asteroid.class);
         } catch (IOException e) {
             LOGGER.warn(e.getMessage());
+        }
+        if (asteroid == null) {
+            throw new NullPointerException("Asteroid with id: " + id + "is absent");
         }
         return asteroid;
     }
@@ -64,6 +61,8 @@ public class ElasticRequests {
         SearchRequest searchRequest = new SearchRequest();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchQuery("closeApproachData.closeApproachDate", date));
+        searchSourceBuilder.from(0);
+        searchSourceBuilder.size(100);
         searchRequest.source(searchSourceBuilder);
         try {
             SearchResponse searchResponse = ElasticsearchConfig.client().search(searchRequest, RequestOptions.DEFAULT);
@@ -80,9 +79,9 @@ public class ElasticRequests {
 
         if (searchHit.length > 0) {
             Arrays.stream(searchHit)
-                    .forEach(hit -> profileDocuments
-                            .add(gson.fromJson(hit.toString(), Asteroid.class))
-                    );
+                    .filter(Objects::nonNull)
+                    .map(hit -> profileDocuments.add(objectMapper.convertValue(hit.getSourceAsMap(), Asteroid.class)))
+                    .collect(Collectors.toList());
         }
         return profileDocuments;
     }

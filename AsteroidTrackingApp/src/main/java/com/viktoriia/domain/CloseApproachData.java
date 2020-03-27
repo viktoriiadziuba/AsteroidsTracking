@@ -25,6 +25,10 @@ public class CloseApproachData {
     @Expose
     private String orbitingBody;
 
+    public CloseApproachData() {
+
+    }
+
     public CloseApproachData(String closeApproachDate, String closeApproachDateFull, RelativeVelocity relativeVelocity, MissDistance missDistance, String orbitingBody) {
         this.closeApproachDate = closeApproachDate;
         this.closeApproachDateFull = closeApproachDateFull;

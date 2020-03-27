@@ -9,6 +9,10 @@ public class EstimatedDiameter {
     @Expose
     private Meters meters;
 
+    public EstimatedDiameter() {
+
+    }
+
     public EstimatedDiameter(Meters meters) {
         this.meters = meters;
     }
