@@ -9,6 +9,10 @@ public class RelativeVelocity {
     @Expose
     private String kilometersPerHour;
 
+    public RelativeVelocity() {
+
+    }
+
     public RelativeVelocity(String kilometersPerHour) {
         this.kilometersPerHour = kilometersPerHour;
     }

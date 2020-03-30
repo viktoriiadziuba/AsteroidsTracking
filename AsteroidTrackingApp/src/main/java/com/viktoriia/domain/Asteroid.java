@@ -31,6 +31,9 @@ public class Asteroid {
     @Expose
     private List<CloseApproachData> closeApproachData;
 
+    public Asteroid() {
+
+    }
 
     public Asteroid(Links links, String neoReferenceId, String name, EstimatedDiameter estimatedDiameter, boolean isPotentiallyHazardousAsteroid, List<CloseApproachData> closeApproachData) {
         this.links = links;
