@@ -41,17 +41,14 @@ public class ElasticRequests {
         }
     }
 
-    public static Asteroid getById(String id) {
-        Asteroid asteroid = null;
+    public static Optional<Asteroid> getById(String id) {
+        Optional<Asteroid> asteroid = Optional.empty();
         GetRequest getRequest = new GetRequest(INDEX, id);
         try {
             GetResponse getResponse = ElasticsearchConfig.client().get(getRequest, RequestOptions.DEFAULT);
-            asteroid = objectMapper.convertValue(getResponse.getSourceAsMap(), Asteroid.class);
+            asteroid = Optional.ofNullable(objectMapper.convertValue(getResponse.getSourceAsMap(), Asteroid.class));
         } catch (IOException e) {
             LOGGER.warn(e.getMessage());
-        }
-        if (asteroid == null) {
-            throw new NullPointerException("Asteroid with id: " + id + "is absent");
         }
         return asteroid;
     }
